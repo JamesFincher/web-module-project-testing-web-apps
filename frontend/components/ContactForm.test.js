@@ -1,8 +1,9 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { findAllByText, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import userEvent from "@testing-library/user-event";
 import ContactForm from "./ContactForm";
+import { findCacheDir } from "webpack-dev-server";
 
 test("renders without errors", () => {
   render(<ContactForm />);
@@ -69,6 +70,43 @@ test('renders "lastName is a required field" if an last name is not entered and 
   });
 });
 
-test("renders all firstName, lastName and email text when submitted. Does NOT render message if message is not submitted.", async () => {});
+test("renders all firstName, lastName and email text when submitted. Does NOT render message if message is not submitted.", async () => {
+  render(<ContactForm />);
+  const firstName = screen.getByLabelText(/first name/i);
+  userEvent.type(firstName, "James");
+  const lastName = screen.getByLabelText(/last name/i);
+  userEvent.type(lastName, "Fincher");
+  const email = screen.getByLabelText(/email/i);
+  userEvent.type(email, "james@fincher.com");
+  const submitButton = screen.getByRole("button", { name: /submit/i });
+  userEvent.click(submitButton);
+  const name = screen.findAllByText(/james/i);
+  expect(name).toBeInTheDocument();
+});
+test("renders all fields text when all fields are submitted.", async () => {
+  //arrange
+  render(<ContactForm />);
+  const firstName = "james";
+  const lastName = "fincher";
+  const email = "james@fincher.dev";
+  const message = "hello";
+  const submitButton = screen.getByRole("button", { name: /submit/i });
 
-test("renders all fields text when all fields are submitted.", async () => {});
+  //act
+  userEvent.type(screen.getByLabelText(/first name/i), firstName);
+  userEvent.type(screen.getByLabelText(/last name/i), lastName);
+  userEvent.type(screen.getByLabelText(/email/i), email);
+  userEvent.type(screen.getByLabelText(/message/i), message);
+  userEvent.click(submitButton);
+
+  //assert
+
+  const first = screen.getByText(firstName);
+  const last = screen.getByText(lastName);
+  const emailText = screen.getByText(email);
+  const messageText = screen.getByText(message);
+  expect(first).toBeInTheDocument();
+  expect(last).toBeInTheDocument();
+  expect(emailText).toBeInTheDocument();
+  expect(messageText).toBeInTheDocument();
+});
