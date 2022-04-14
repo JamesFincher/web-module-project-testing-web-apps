@@ -1,5 +1,11 @@
 import React from "react";
-import { findAllByText, render, screen, waitFor } from "@testing-library/react";
+import {
+  findAllByText,
+  queryByText,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import userEvent from "@testing-library/user-event";
 import ContactForm from "./ContactForm";
@@ -71,18 +77,24 @@ test('renders "lastName is a required field" if an last name is not entered and 
 });
 
 test("renders all firstName, lastName and email text when submitted. Does NOT render message if message is not submitted.", async () => {
+  //arrange
   render(<ContactForm />);
-  const firstName = screen.getByLabelText(/first name/i);
-  userEvent.type(firstName, "James");
-  const lastName = screen.getByLabelText(/last name/i);
-  userEvent.type(lastName, "Fincher");
-  const email = screen.getByLabelText(/email/i);
-  userEvent.type(email, "james@fincher.com");
+  const firstName = "james";
+  const lastName = "fincher";
+  const email = "james@fincher.dev";
   const submitButton = screen.getByRole("button", { name: /submit/i });
+
+  //act
+  userEvent.type(screen.getByLabelText(/first name/i), firstName);
+  userEvent.type(screen.getByLabelText(/last name/i), lastName);
+  userEvent.type(screen.getByLabelText(/email/i), email);
   userEvent.click(submitButton);
-  const name = screen.findAllByText(/james/i);
-  expect(name).toBeInTheDocument();
+
+  //assert
+  const message = screen.queryByText("Message:");
+  expect(message).toBeNull();
 });
+
 test("renders all fields text when all fields are submitted.", async () => {
   //arrange
   render(<ContactForm />);
